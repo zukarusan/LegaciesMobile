@@ -6,9 +6,76 @@
     tools:context=".Fragment.Recipient">
 
     <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="@string/hello_blank_fragment" />
-
+        android:layout_height="match_parent">
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="20dp"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_marginTop="20dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="ID Penerima Darah"
+                    android:textSize="16sp"
+                    android:textColor="@color/redBlood"/>
+                <EditText
+                    android:id="@+id/etIdRecipient"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@android:drawable/editbox_background"
+                    android:inputType="text"/>
+                <TextView
+                    android:layout_marginTop="10dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="ID Rumah Sakit"
+                    android:textSize="16sp"
+                    android:textColor="@color/redBlood"/>
+                <EditText
+                    android:id="@+id/etIdRumahSakit"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@android:drawable/editbox_background"
+                    android:inputType="textCapCharacters"/>
+                <TextView
+                    android:layout_marginTop="10dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Jumlah Darah Diperlukan (Mili Liter)"
+                    android:textSize="16sp"
+                    android:textColor="@color/redBlood"/>
+                <EditText
+                    android:id="@+id/etJumlahDarah"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@android:drawable/editbox_background"
+                    android:inputType="number"/>
+                <Button
+                    android:id="@+id/btnRequestDarah"
+                    android:text="Request Darah"
+                    android:layout_marginTop="25dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/redBlood"
+                    android:textColor="@android:color/white"/>
+                <TextView
+                    android:id="@+id/tvStatusRequest"
+                    android:text="Status"
+                    android:layout_marginTop="25dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/redBlood"
+                    android:textSize="18sp"
+                    android:textAlignment="center"
+                    android:visibility="gone"
+                    android:textStyle="bold"/>
+            </LinearLayout>
+        </ScrollView>
+    </LinearLayout>
 </FrameLayout>
