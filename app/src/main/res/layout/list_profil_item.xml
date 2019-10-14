@@ -22,6 +22,7 @@
         android:textStyle="bold"
         android:textColor="@color/redBlood"
         android:gravity="right"
+        android:layout_alignParentEnd="true"
 
         android:layout_centerVertical="true"
         android:layout_marginStart="50dp"

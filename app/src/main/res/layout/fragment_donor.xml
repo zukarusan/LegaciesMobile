@@ -68,7 +68,7 @@
                 android:textColor="@android:color/white"/>
             <TextView
                 android:layout_alignParentBottom="true"
-                android:id="@+id/tcCooldown"
+                android:id="@+id/tvCooldown"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:text="Cooldown"

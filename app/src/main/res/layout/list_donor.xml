@@ -14,11 +14,22 @@
         android:layout_alignParentEnd="true"
         android:layout_centerVertical="true"
         android:textSize="12sp"/>
+
     <TextView
         android:id="@+id/tvTempat"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Jumlah:  "
+        android:text="Tempat: "
+        android:textSize="15sp"
+        android:textColor="#000"
+        android:layout_marginBottom="5dp"/>
+
+    <TextView
+        android:layout_below="@id/tvTempat"
+        android:id="@+id/tvJumlah"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Jumlah: "
         android:textColor="#000"
         android:textSize="15sp"/>
 

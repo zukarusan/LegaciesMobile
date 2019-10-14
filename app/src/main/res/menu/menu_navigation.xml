@@ -3,7 +3,7 @@
     <item android:id="@+id/nvDonor"
         android:title="Donor"
         android:icon="@drawable/ic_love"/>
-    <item android:id="nvRecipient"
+    <item android:id="@+id/nvRecipient"
         android:title="Recipient"
         android:icon="@drawable/ic_search"/>
 </menu>
