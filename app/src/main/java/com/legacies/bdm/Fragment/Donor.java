@@ -2,7 +2,9 @@ package com.legacies.bdm.Fragment;
 
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.location.Location;
 import android.net.Uri;
@@ -24,11 +26,13 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.gms.location.LocationListener;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.legacies.bdm.Activity.WelcomeScreen;
 import com.legacies.bdm.Adapter.DonorAdapter;
 import com.legacies.bdm.Object.DonorItem;
 import com.legacies.bdm.R;
@@ -51,6 +55,7 @@ public class Donor extends Fragment {
     RecyclerView recyclerView;
     ArrayList<DonorItem> donorArray = new ArrayList<>();
     TextView tvBelumAda, tvCooldown, tvSaldo;
+    int saldo;
 
 
     public Donor(Activity activity) {
@@ -133,6 +138,9 @@ public class Donor extends Fragment {
             case R.id.tb_refresh:
                 ambilLog();
                 return true;
+            case R.id.tb_signout:
+                signOut();
+                return true;
 
         }
         return super.onOptionsItemSelected(item);
@@ -156,11 +164,14 @@ public class Donor extends Fragment {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
+                    saldo = 0;
                     ArrayList<DonorItem> arrayList = new ArrayList<>();
                     for (DataSnapshot children : dataSnapshot.getChildren()) {
-                        String tempat = children.child("Tempat").getValue().toString();
-                        String tanggal = children.child("Tanggal").getValue().toString();
-                        String jumlah = children.child("Jumlah").getValue().toString();
+                        String tempat = "Tempat : " + children.child("Tempat").getValue().toString();
+                        String tanggal =  children.child("Tanggal").getValue().toString();
+                        int iJumlah = Integer.parseInt(children.child("Jumlah").getValue().toString());
+                        saldo+=iJumlah;
+                        String jumlah = "Jumlah : " +iJumlah + "ml";
                         arrayList.add(new DonorItem(tempat,tanggal,jumlah));
                     }
                     donorArray = arrayList;
@@ -209,12 +220,23 @@ public class Donor extends Fragment {
     }
 
     private void setSaldo() {
-        int saldo = 0;
-        for (int i = 0; i < donorArray.size();i++) {
-            saldo += Integer.parseInt(donorArray.get(i).jumlah);
-        }
-
         tvSaldo.setText(saldo+"");
+    }
+
+    private void signOut() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+        builder.setTitle("Konfirmasi");
+        builder.setMessage("Apakah anda yakin ingin keluar?");
+        builder.setPositiveButton("Ya", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                FirebaseAuth.getInstance().signOut();
+                activity.finish();
+                startActivity(new Intent(activity, WelcomeScreen.class));
+            }
+        });
+        builder.setNegativeButton("Tidak", null);
+        builder.create().show();
     }
 
 }

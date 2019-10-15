@@ -10,6 +10,13 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="25dp">
+
+        <ImageView
+            android:layout_marginTop="20dp"
+            android:layout_width="match_parent"
+            android:layout_height="160dp"
+            android:src="@drawable/icon"/>
+
         <EditText
             android:id="@+id/etLoginEmail"
             android:hint="Email"
@@ -25,7 +32,8 @@
             android:layout_marginTop="10dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@android:drawable/editbox_background">
+            android:background="@android:drawable/editbox_background"
+            android:inputType="textPassword">
         </EditText>
         <Button
             android:id="@+id/btnloginLogin"

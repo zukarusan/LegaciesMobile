@@ -51,8 +51,8 @@ public class DonorAdapter extends RecyclerView.Adapter<DonorAdapter.DonorViewHol
 
         void bind(int pos) {
             DonorItem item = arrayList.get(arrayList.size()-(pos+1));
-            tvTempat.setText("Tempat: " + item.tempat);
-            tvJumlah.setText("Jumlah: " + item.jumlah + "ml");
+            tvTempat.setText(item.tempat);
+            tvJumlah.setText(item.jumlah);
             tvTanggal.setText(item.tanggal);
         }
     }

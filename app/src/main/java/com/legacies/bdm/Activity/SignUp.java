@@ -12,6 +12,7 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.location.Address;
 import android.location.Geocoder;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -28,8 +29,12 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthUserCollisionException;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.legacies.bdm.R;
 import com.legacies.bdm.Tool.SGps;
 import com.legacies.bdm.Tool.SqliteSetting;
@@ -37,6 +42,9 @@ import com.legacies.bdm.Tool.SqliteSetting;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -152,17 +160,17 @@ public class SignUp extends AppCompatActivity {
     private void register() {
 
         // Input handler
-        final String email = etEmail.getText().toString();
-        final String password = etPassword.getText().toString();
-        final String nama = etNama.getText().toString();
-        final String noHp = etNomorHp.getText().toString();
-        final String tglLahir = etTanggalLahir.getText().toString();
-        final String gender = spGender.getSelectedItem().toString();
-        final String goldar = spGoldar.getSelectedItem().toString();
-        final String rhesus = spRhesus.getSelectedItem().toString();
-        final String alamat = etAlamat.getText().toString();
-        final String kota = spKab.getSelectedItem().toString();
-        final String prov = spProvinsi.getSelectedItem().toString();
+        final String email = etEmail.getText().toString().trim();
+        final String password = etPassword.getText().toString().trim();
+        final String nama = etNama.getText().toString().trim();
+        final String noHp = etNomorHp.getText().toString().trim();
+        final String tglLahir = etTanggalLahir.getText().toString().trim();
+        final String gender = spGender.getSelectedItem().toString().trim();
+        final String goldar = spGoldar.getSelectedItem().toString().trim();
+        final String rhesus = spRhesus.getSelectedItem().toString().trim();
+        final String alamat = etAlamat.getText().toString().trim();
+        final String kota = spKab.getSelectedItem().toString().trim();
+        final String prov = spProvinsi.getSelectedItem().toString().trim();
 
 
         if (email.length() < 4 || !email.contains("@") || !email.contains(".")) {
@@ -229,7 +237,8 @@ public class SignUp extends AppCompatActivity {
                     dataMap.put("Nama", nama);
                     dataMap.put("TglLahir", tglLahir);
                     dataMap.put("Gender", gender);
-                    dataMap.put("GolDar", goldar+rhesus);
+                    dataMap.put("GolDar", goldar);
+                    dataMap.put("Rhesus", rhesus);
                     dataMap.put("Status", 0);
                     dataMap.put("Alamat",alamatLengkap);
                     assert latLng != null;
@@ -250,17 +259,13 @@ public class SignUp extends AppCompatActivity {
                                 setting.simpan("Nama", nama);
                                 setting.simpan("TglLahir", tglLahir);
                                 setting.simpan("Gender", gender);
-                                setting.simpan("GolDar", goldar+rhesus);
+                                setting.simpan("GolDar", goldar);
+                                setting.simpan("Rhesus", rhesus);
                                 setting.simpan("Status", "Belum Terverifikasi");
                                 setting.simpan("Alamat",alamatLengkap);
                                 setting.simpan("Lat", ""+latLng.latitude);
                                 setting.simpan("Long", ""+latLng.longitude);
                                 setting.simpan("Phone", nomorHp);
-
-                                //Save Koordinat
-
-                                DatabaseReference koorRef = FirebaseDatabase.getInstance().getReference("Koordinat/"+id);
-                                koorRef.setValue(latLng.latitude+","+latLng.longitude);
 
                                 finish();
                                 startActivity(new Intent(SignUp.this, MainActivity.class));
@@ -271,10 +276,43 @@ public class SignUp extends AppCompatActivity {
                         }
                     });
 
+                    //Save Koordinat
+                    final String latLongUser = latLng.latitude+","+latLng.longitude;
+                    DatabaseReference koorRef = FirebaseDatabase.getInstance().getReference("Koordinat/"+id+"/LatLong");
+                    koorRef.setValue(latLongUser);
+
+                    DatabaseReference refRs = FirebaseDatabase.getInstance().getReference("RS");
+                    refRs.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot snapRs) {
+                            if (snapRs.exists()) {
+                                for (DataSnapshot childrenRs : snapRs.getChildren()) {
+                                    String idRs = childrenRs.getKey();
+                                    String latLongRs = childrenRs.child("LatLong").getValue().toString();
+
+                                    String ref = "Koordinat/"+id+"/"+idRs;
+
+                                    new cariJarakAsync(latLongUser,latLongRs,ref).execute();
+                                }
+                            }
+
+
+                        }
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+                        }
+                    });
+
+
+
                 } else {
                     pdialog.dismiss();
                     Log.d("Error", task.getException().toString());
-                    Toast.makeText(SignUp.this, "Gagal Register. Periksa koneksi internet.", Toast.LENGTH_SHORT).show();
+                    if (task.getException() instanceof FirebaseAuthUserCollisionException) {
+                        Toast.makeText(SignUp.this, "Email telah terdaftar.", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(SignUp.this, "Gagal Register. Periksa koneksi internet.", Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
         });
@@ -369,5 +407,55 @@ public class SignUp extends AppCompatActivity {
             e.printStackTrace();
         }
     }
+
+    private long scrapApi(String latLong1, String latLong2) {
+        String url = "https://maps.googleapis.com/maps/api/distancematrix/json?units=imperial&origins="+latLong1+"&destinations="+latLong2+"&key=AIzaSyAhzBTG0Ynnq2xr2YLsBOaCSbfddjXpZAM";
+        try {
+            Document document = Jsoup.connect(url).ignoreContentType(true).get();
+            Elements elements = document.select("body");
+            String result = elements.get(0).text();
+            JSONObject jsonObject = new JSONObject(result);
+            String jarak = jsonObject.getJSONArray("rows").getJSONObject(0).getJSONArray("elements")
+                    .getJSONObject(0).getJSONObject("distance").optString("value").trim();
+
+            return Long.parseLong(jarak);
+        } catch (IOException | JSONException e) {
+            e.printStackTrace();
+            return 0;
+        }
+    }
+
+    class cariJarakAsync extends AsyncTask<Void,Void,Void> {
+
+        String latLong1, latLong2, ref;
+
+        long jarak;
+
+        public cariJarakAsync(String latLong1, String latLong2,String ref) {
+            this.latLong1 = latLong1;
+            this.latLong2 = latLong2;
+            this.ref = ref;
+        }
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+            jarak = scrapApi(latLong1,latLong2);
+            return null;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            FirebaseDatabase.getInstance().getReference(ref).setValue(jarak);
+        }
+    }
+
+
+
 
 }

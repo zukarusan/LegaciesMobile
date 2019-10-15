@@ -39,7 +39,7 @@ public class WelcomeScreen extends AppCompatActivity {
                 }
 
             }
-        },4000);
+        },3500);
 
 
 

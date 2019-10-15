@@ -46,8 +46,8 @@ public class Login extends AppCompatActivity {
         btnLogin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String email = etEmail.getText().toString();
-                String password = etPassword.getText().toString();
+                String email = etEmail.getText().toString().trim();
+                String password = etPassword.getText().toString().trim();
 
                 if (email.length() < 5) {
                     Toast.makeText(Login.this, "Mohon isi Email dengan benar.", Toast.LENGTH_SHORT).show();
@@ -86,6 +86,7 @@ public class Login extends AppCompatActivity {
                                 String lat = dataSnapshot.child("Lat").getValue().toString();
                                 String lng = dataSnapshot.child("Long").getValue().toString();
                                 String nomorHp = dataSnapshot.child("Phone").getValue().toString();
+                                String rhesus = dataSnapshot.child("Rhesus").getValue().toString();
 
                                 SqliteSetting setting = new SqliteSetting(Login.this);
                                 setting.simpan("ID", id);
@@ -99,6 +100,7 @@ public class Login extends AppCompatActivity {
                                 setting.simpan("Lat", lat);
                                 setting.simpan("Long", lng);
                                 setting.simpan("Phone", nomorHp);
+                                setting.simpan("Rhesus", rhesus);
                             }
                             pdialog.dismiss();
                             finish();

@@ -1,7 +1,9 @@
 package com.legacies.bdm.Fragment;
 
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -76,9 +78,9 @@ public class Recipient extends Fragment {
         btnRequest.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String idRecipient = etIdRecipient.getText().toString();
-                String idRumahSakit = etIdRumahSakit.getText().toString();
-                String sJumlahDarah = etJumlahDarah.getText().toString();
+                String idRecipient = etIdRecipient.getText().toString().trim();
+                String idRumahSakit = etIdRumahSakit.getText().toString().trim();
+                String sJumlahDarah = etJumlahDarah.getText().toString().trim();
                 if (idRecipient.length() < 6) {
                     Toast.makeText(view.getContext(), "Mohon isi ID Penerima dengan benar.", Toast.LENGTH_SHORT).show();
                 } else if (idRumahSakit.length() < 3) {
@@ -101,7 +103,7 @@ public class Recipient extends Fragment {
 
         final FirebaseDatabase instance = FirebaseDatabase.getInstance();
 
-        DatabaseReference recipientRef = instance.getReference("User/"+idRecipient);
+        DatabaseReference recipientRef = instance.getReference("User/"+idRecipient.replace(".",""));
         recipientRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull final DataSnapshot datasnapRecipient) {
@@ -118,26 +120,32 @@ public class Recipient extends Fragment {
 
                                 String nama = datasnapRecipient.child("Nama").getValue().toString();
                                 String goldar = datasnapRecipient.child("GolDar").getValue().toString();
+                                String rhesus = datasnapRecipient.child("Rhesus").getValue().toString();
+                                String gender = datasnapRecipient.child("Gender").getValue().toString();
                                 final String rumahSakit = datasnapRs.child("Nama").getValue().toString();
+                                String latLongRs = datasnapRs.child("LatLong").getValue().toString();
 
                                 Map<String,Object> dataMap = new HashMap<>();
                                 dataMap.put("ID", idRecipient);
                                 dataMap.put("Nama", nama);
-                                dataMap.put("RS", rumahSakit);
+                                dataMap.put("RS", idRumahSakit);
+                                //dataMap.put("LatLongRs", latLongRs);
                                 dataMap.put("GolDar", goldar);
+                                dataMap.put("Rhesus", rhesus);
                                 dataMap.put("Jumlah", jumlahDarah);
                                 dataMap.put("Status", 0);
+                                dataMap.put("Gender", gender);
 
                                 instance.getReference("Request/" + idRequest).updateChildren(dataMap).addOnCompleteListener(new OnCompleteListener<Void>() {
                                     @Override
                                     public void onComplete(@NonNull Task<Void> task) {
+                                        pdialog.dismiss();
                                         if (task.isSuccessful()) {
                                             instance.getReference("User/"+setting.ambil1("ID")+"/Request").setValue(idRequest);
+                                            cekRequest();
                                         } else {
                                             Toast.makeText(view.getContext(), "Request tidak bisa dilakukan. Periksa Koneksi.", Toast.LENGTH_LONG).show();
                                         }
-                                        setLayout(idRecipient,rumahSakit,""+jumlahDarah,"0");
-                                        pdialog.dismiss();
                                     }
                                 });
 
@@ -163,23 +171,24 @@ public class Recipient extends Fragment {
         });
     }
 
-    private void setLayout(String idRecipient, String idRs, String jumlah, String status) {
+    private void setLayout(String idRecipient, String idRs, String jumlah, String status, String idRequest) {
         etIdRecipient.setText(idRecipient);
         etIdRecipient.setEnabled(false);
-        etIdRecipient.setFocusable(false);
 
         etIdRumahSakit.setText(idRs);
         etIdRumahSakit.setEnabled(false);
-        etIdRumahSakit.setFocusable(false);
 
         etJumlahDarah.setText(jumlah);
         etJumlahDarah.setEnabled(false);
-        etJumlahDarah.setFocusable(false);
 
         if (status.equals("0")) {
             tvStatusRequest.setText("Request menunggu persetujuan admin.");
+        } else if (status.equals("1")){
+            tvStatusRequest.setText("Request sudah diterima dan sedang diproses.");
+        } else if (status.equals("2")){
+            hapusRequest("Request anda ditolak.", idRequest);
         } else {
-            tvStatusRequest.setText("Request sedang diproses.");
+            hapusRequest("Request telah selesai diproses.", idRequest);
         }
 
         tvStatusRequest.setVisibility(View.VISIBLE);
@@ -199,21 +208,32 @@ public class Recipient extends Fragment {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 if (dataSnapshot.exists()) {
-                    String idRequest = dataSnapshot.getValue().toString();
+                    final String idRequest = dataSnapshot.getValue().toString();
 
-                    instance.getReference("Request/"+idRequest).addListenerForSingleValueEvent(new ValueEventListener() {
+                    instance.getReference("Request/"+idRequest).addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                             if (dataSnapshot.exists()) {
-                                String id = dataSnapshot.child("ID").getValue().toString();
-                                String idRs = dataSnapshot.child("RS").getValue().toString();
-                                String jumlah = dataSnapshot.child("Jumlah").getValue().toString();
-                                String status = dataSnapshot.child("Status").getValue().toString();
+                                final String id = dataSnapshot.child("ID").getValue().toString();
+                                final String idRs = dataSnapshot.child("RS").getValue().toString();
+                                final String jumlah = dataSnapshot.child("Jumlah").getValue().toString();
+                                final String status = dataSnapshot.child("Status").getValue().toString();
 
-                                setLayout(id,idRs,jumlah,status);
+                                instance.getReference("RS/" +idRs+"/Nama").addListenerForSingleValueEvent(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                                        String namaRs = idRs;
+                                        if (dataSnapshot.exists()) {
+                                            namaRs = dataSnapshot.getValue().toString();
+                                        }
+                                        setLayout(id,namaRs,jumlah,status,idRequest);
+                                        pdialog.dismiss();
+                                    }
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError databaseError) {
+                                    }
+                                });
                             }
-
-                            pdialog.dismiss();
                         }
                         @Override
                         public void onCancelled(@NonNull DatabaseError databaseError) {
@@ -225,9 +245,42 @@ public class Recipient extends Fragment {
             }
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
-
             }
         });
+    }
+
+    private void hapusRequest(String pesan, final String idRequest) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(view.getContext());
+        builder.setTitle("Pemberitahuan");
+        builder.setMessage(pesan);
+        builder.setCancelable(false);
+        builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                String id = setting.ambil1("ID");
+                FirebaseDatabase.getInstance().getReference("User/"+id+"/Request").removeValue();
+                FirebaseDatabase.getInstance().getReference("Request/"+idRequest).removeValue();
+                resetLayout();
+            }
+        });
+
+        builder.create().show();
+    }
+
+    private void resetLayout() {
+        etIdRecipient.setText("");
+        etIdRecipient.setEnabled(true);
+
+        etIdRumahSakit.setText("");
+        etIdRumahSakit.setEnabled(true);
+
+        etJumlahDarah.setText("");
+        etJumlahDarah.setEnabled(true);
+
+        tvStatusRequest.setText("");
+        tvStatusRequest.setVisibility(View.GONE);
+
+        btnRequest.setVisibility(View.VISIBLE);
     }
 
 }

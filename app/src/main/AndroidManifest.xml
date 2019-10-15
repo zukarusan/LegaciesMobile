@@ -18,10 +18,12 @@
             android:screenOrientation="portrait"/>
         <activity android:name=".Activity.Profil"
             android:configChanges="orientation"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait"
+            android:label="Profil"/>
         <activity android:name=".Activity.Login"
             android:configChanges="orientation"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait"
+            android:label="Login"/>
         <activity android:name=".Activity.SignUp"
             android:configChanges="orientation"
             android:screenOrientation="portrait"

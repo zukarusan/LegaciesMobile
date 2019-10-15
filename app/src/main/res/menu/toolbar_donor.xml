@@ -14,4 +14,9 @@
         app:showAsAction="always"
         />
 
+    <item android:id="@+id/tb_signout"
+        android:title="Sign Out"
+        app:showAsAction="never"
+        />
+
 </menu>

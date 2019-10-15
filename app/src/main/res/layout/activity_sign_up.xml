@@ -32,7 +32,6 @@
             android:background="@android:drawable/editbox_background"
             android:inputType="textEmailAddress"/>
         <TextView
-            android:layout_marginTop="20dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Password"
@@ -46,7 +45,6 @@
             android:background="@android:drawable/editbox_background"
             android:inputType="textPassword"/>
         <TextView
-            android:layout_marginTop="20dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Nama"
@@ -60,7 +58,6 @@
             android:background="@android:drawable/editbox_background"
             android:inputType="textCapWords"/>
         <TextView
-            android:layout_marginTop="20dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Nomor Hp"

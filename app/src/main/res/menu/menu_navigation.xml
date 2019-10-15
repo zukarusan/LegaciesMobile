@@ -6,4 +6,8 @@
     <item android:id="@+id/nvRecipient"
         android:title="Recipient"
         android:icon="@drawable/ic_search"/>
+    <item android:id="@+id/nvLog"
+        android:title="Log"
+        android:icon="@drawable/ic_log"
+        />
 </menu>

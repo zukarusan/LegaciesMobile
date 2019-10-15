@@ -50,7 +50,7 @@ public class Profil extends AppCompatActivity {
         arrayList.add(new ListProfilItem("Nama", setting.ambil1("Nama")));
         arrayList.add(new ListProfilItem("Alamat Rumah", setting.ambil1("Alamat")));
         arrayList.add(new ListProfilItem("Nomor HP", setting.ambil1("Phone")));
-        arrayList.add(new ListProfilItem("Golongan Darah", setting.ambil1("GolDar")));
+        arrayList.add(new ListProfilItem("Golongan Darah", setting.ambil1("GolDar")+setting.ambil1("Rhesus")));
         arrayList.add(new ListProfilItem("Gender", setting.ambil1("Gender")));
         arrayList.add(new ListProfilItem("Tanggal Lahir", setting.ambil1("TglLahir")));
         arrayList.add(new ListProfilItem("Status", setting.ambil1("Status")));
